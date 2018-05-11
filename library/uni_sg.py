@@ -26,7 +26,7 @@ options:
         required: True
     state:
         description:
-            - the state of the Storage Group
+            - the state of the Storage Group.
         options:
             - present
             - absent
@@ -38,8 +38,13 @@ options:
         required: True
     symm_id:
         description:
-            - The symmetrix ID of the array you want to add/remove the SG
+            - The symmetrix ID of the array you want to add/remove the SG.
         required: True
+    srp_id:
+        description:
+            - The storage resource pool ID, needed for create.
+        required: false
+        default: 'SRP_1'
 '''
 
 EXAMPLES = '''
@@ -120,6 +125,7 @@ def main():
             uni_host=dict(
                 default='https://127.0.0.1:8443'),
             symm_id=dict(required=True),
+            srp_id=dict(default='SRP_1'),
         )
     )
     if HAS_REQUESTS is False:
@@ -143,10 +149,9 @@ def main():
     if module.params['state'] == 'present':
       if storageGroup.get('message') is not None and 'Cannot find Storage Group' in storageGroup['message']:
         output = client.create_sg(module.params['symm_id'],
-                 data={"srpId": "SRP_1", "storageGroupId": module.params['name'].upper(),"create_empty_storage_group": True})
+                 data={"srpId": module.params['srp_id'], "storageGroupId": module.params['name'].upper(),"create_empty_storage_group": True})
         if output.status_code == 200:
           result['changed'] = True
-          result['stdout'] = client.get_sg(module.params['symm_id'],module.params['name'])
         else:
           module.fail_json(output.text)
       else:
