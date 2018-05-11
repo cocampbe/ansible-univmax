@@ -100,17 +100,29 @@ class UNIRestClient:
 
 
     def delete_sg(self, symm_id, sg_id):
-        response = self.session.delete(
+        while True:
+          response = self.session.delete(
             self.baseURI+'/sloprovisioning/symmetrix/'+symm_id+'/storagegroup/'+sg_id
-        )
-        return response
+          )
+          if response.status_code == 202:
+            continue
+          if response.status_code == 204:
+            continue
+          elif response.status_code == 500:
+            continue
+          elif response.status_code == 404:
+            return response
+            break
+          else:
+            return response
+            break
 
     
     def get_sg(self, symm_id, sg_id):
         response = self.session.get(
             self.baseURI+'/sloprovisioning/symmetrix/'+symm_id+'/storagegroup/'+sg_id
         )
-        return response.json()
+        return response
 
 
 def main():
@@ -147,25 +159,29 @@ def main():
     result['name'] = module.params['name'].upper()
     result['state'] = module.params['state']
     if module.params['state'] == 'present':
-      if storageGroup.get('message') is not None and 'Cannot find Storage Group' in storageGroup['message']:
+      if storageGroup.status_code == 404:
         output = client.create_sg(module.params['symm_id'],
                  data={"srpId": module.params['srp_id'], "storageGroupId": module.params['name'].upper(),"create_empty_storage_group": True})
         if output.status_code == 200:
           result['changed'] = True
         else:
-          module.fail_json(output.text)
-      else:
+          module.fail_json(msg=str(output.status_code)+': '+output.text)
+      elif storageGroup.status_code == 200:
         result['changed'] = False
+      else:
+       module.fail_json(msg=storageGroup.text)
     
     if module.params['state'] == 'absent':
-      if storageGroup.get('storageGroup') is not None and storageGroup['storageGroup'][0]['storageGroupId'] == module.params['name'].upper():
+      if storageGroup.status_code == 200:
         output = client.delete_sg(module.params['symm_id'],module.params['name'].upper())
-        if output.status_code == 204:
+        if output.status_code == 404:
           result['changed'] = True
         else:
-          module.fail_json(msg=output.text)
-      else:
+          module.fail_json(msg=str(output.status_code)+': '+output.text)
+      elif storageGroup.status_code == 404:
         result['changed'] = False
+      else:
+        module.fail_json(msg=str(storageGroup.status_code)+": "+storageGroup.text) 
 
     module.exit_json(**result)
 

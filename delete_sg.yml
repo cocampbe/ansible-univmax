@@ -1,0 +1,12 @@
+---
+ - hosts: localhost
+   gather_facts: no
+   tasks:
+     - name: delete SG
+       uni_sg:
+         name: 'TEST_SG'
+         uni_user: 'username'
+         uni_pass: 'password'
+         uni_host: 'https://unimax01:8443'
+         symm_id: '000456000347'
+         state: 'absent'
