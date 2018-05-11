@@ -100,22 +100,26 @@ class UNIRestClient:
 
 
     def delete_sg(self, symm_id, sg_id):
-        while True:
-          response = self.session.delete(
-            self.baseURI+'/sloprovisioning/symmetrix/'+symm_id+'/storagegroup/'+sg_id
-          )
-          if response.status_code == 202:
-            continue
-          if response.status_code == 204:
-            continue
-          elif response.status_code == 500:
-            continue
-          elif response.status_code == 404:
-            return response
-            break
-          else:
-            return response
-            break
+        response = self.session.delete(
+          self.baseURI+'/sloprovisioning/symmetrix/'+symm_id+'/storagegroup/'+sg_id
+        )
+        if response.status_code == 404:
+          return reponse
+        elif response.status_code == 204:
+          while True: 
+            status = self.get_sg(symm_id, sg_id)
+            if status.status_code == 200:
+              continue
+            if status.status_code == 204:
+              continue
+            elif status.status_code == 500:
+              continue
+            elif status.status_code == 404:
+              return status
+              break
+            else:
+              return status
+              break
 
     
     def get_sg(self, symm_id, sg_id):
