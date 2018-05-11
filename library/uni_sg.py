@@ -146,6 +146,7 @@ def main():
                  data={"srpId": "SRP_1", "storageGroupId": module.params['name'].upper(),"create_empty_storage_group": True})
         if output.status_code == 200:
           result['changed'] = True
+          result['stdout'] = client.get_sg(module.params['symm_id'],module.params['name'])
         else:
           module.fail_json(output.text)
       else:
