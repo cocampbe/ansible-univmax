@@ -49,7 +49,7 @@ options:
 
 EXAMPLES = '''
 - name: Create an SG
-  ovm_vm:
+  uni_sg:
     name: 'TEST_SG'
     uni_user: 'admin'
     uni_pass: 'password'
