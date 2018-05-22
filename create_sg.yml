@@ -7,7 +7,7 @@
          name: 'TEST_SG'
          uni_user: 'unisphere'
          uni_pass: 'mypass'
-         uni_host: 'https://vmax02:8443'
+         uni_url: 'https://vmax02:8443'
          symm_id: '0045l7001275'
          state: 'present'
        
