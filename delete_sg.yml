@@ -7,6 +7,6 @@
          name: 'TEST_SG'
          uni_user: 'username'
          uni_pass: 'password'
-         uni_host: 'https://unimax01:8443'
+         uni_url: 'https://unimax01:8443'
          symm_id: '000456000347'
          state: 'absent'
