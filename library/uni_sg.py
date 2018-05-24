@@ -31,10 +31,10 @@ options:
             - present
             - absent
         required: True
-    uni_host:
+    uni_url:
         description:
             - The unisphere https address
-            - https://<uni_host>:8443
+            - https://<uni_url>:8443
         required: True
     symm_id:
         description:
@@ -53,7 +53,7 @@ EXAMPLES = '''
     name: 'TEST_SG'
     uni_user: 'admin'
     uni_pass: 'password'
-    uni_host: 'https://<uni_host>:8443'
+    uni_url: 'https://<uni_url>:8443'
     symm_id: '0000000000000'
     state: 'present'
 '''
@@ -138,7 +138,7 @@ def main():
             name=dict(required=True),
             uni_user=dict(required=True),
             uni_pass=dict(required=True, no_log=True),
-            uni_host=dict(
+            uni_url=dict(
                 default='https://127.0.0.1:8443'),
             symm_id=dict(required=True),
             srp_id=dict(default='SRP_1'),
@@ -148,12 +148,12 @@ def main():
         module.fail_json(
             msg="uni_sg module requires the 'requests' package")
 
-    baseURI = module.params['uni_host']+'/univmax/restapi'
+    baseURI = module.params['uni_url']+'/univmax/restapi/84'
     session = auth(module.params['uni_user'], module.params['uni_pass'])
     client = UNIRestClient(baseURI, session)
 
     if session.get(baseURI).status_code != 500:
-       module.fail_json(msg="Error connecting to unisphere! Check your login credentials or uni_host address")
+       module.fail_json(msg="Error connecting to unisphere! Check your login credentials or uni_url address")
 
     storageGroup = client.get_sg(
         module.params['symm_id'],
@@ -165,8 +165,9 @@ def main():
     if module.params['state'] == 'present':
       if storageGroup.status_code == 404:
         output = client.create_sg(module.params['symm_id'],
-                 data={"srpId": module.params['srp_id'], "storageGroupId": module.params['name'].upper(),"create_empty_storage_group": True})
-        if output.status_code == 200:
+                 data={"srpId": module.params['srp_id'], "storageGroupId": module.params['name'].upper(),
+                   "create_empty_storage_group": True,"emulation": "FBA"})
+        if output.status_code == 201:
           result['changed'] = True
         else:
           module.fail_json(msg=str(output.status_code)+': '+output.text)
